@@ -1,5 +1,12 @@
 const express = require('express')
+const morgan = require('morgan')
+
 const app = express()
+
+morgan.token('body', (req) => JSON.stringify(req.body));
+
+app.use(express.json())
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 let persons =
     [
@@ -25,34 +32,6 @@ let persons =
         }
     ]
 
-// const app = http.createServer((request, response) => {
-//     response.writeHead(200, { 'Content-Type': 'application/json' })
-//     response.end(JSON.stringify(persons))
-// })
-
-// const app = http.createServer((request, response) => {
-// const url = req.url;
-
-// if (url === '/') {
-//     res.writeHead(200, { 'Content-Type': 'text/plain' });
-//     res.end('FullStackOpen part 3!');
-// } else if (url === '/info') {
-//     res.writeHead(200, { 'Content-Type': 'text/plain' });
-//     res.end(`Phonebook has info for ${persons.length} people\n\n${timestamp} (Eastern European Standard Time)`);
-// }
-// else if (url === '/api/persons') {
-//     res.writeHead(200, { 'Content-Type': 'application/json' });
-//     res.end(JSON.stringify(persons));
-// }
-// else {
-//     res.writeHead(404, { 'Content-Type': 'text/plain' });
-//     res.end('Page not found');
-// }
-// })
-
-app.use(express.json())
-
-
 const generateId = () => {
     const MIN = 1;
     const MAX = 999999
@@ -69,6 +48,12 @@ app.post('/api/persons', (request, response) => {
     if (!body.name || !body.number) {
         return response.status(400).json({
             error: 'name or number missing'
+        })
+    }
+
+    if (persons.some(person => person.name === body.name)) {
+        return response.status(400).json({
+            error: 'name must be unique'
         })
     }
 
