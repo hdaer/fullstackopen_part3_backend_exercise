@@ -11,66 +11,62 @@ app.use(express.json())
 app.use(express.static('dist'))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
-
-const generateId = () => {
-    const MIN = 1;
-    const MAX = 999999
-    const getRandomArbitrary = (min, max) => {
-        return Math.random() * (max - min) + min;
-    }
-    const id = Math.floor(getRandomArbitrary(MIN, MAX))
-    return id
-}
+//CREATE
 
 app.post('/api/persons', (request, response) => {
     const body = request.body
 
+    const persons = Person.find({}).then(persons => {
 
-    if (!body.name || !body.number) {
-        return response.status(400).json({
-            error: 'name or number missing'
+        if (!body.name || !body.number) {
+            return response.status(400).json({
+                error: 'name or number missing'
+            })
+        }
+
+        if (persons.some(person => person.name === body.name)) {
+            return response.status(400).json({
+                error: 'name must be unique'
+            })
+        }
+
+        const person = new Person({
+            name: body.name,
+            phoneNumber: body.number,
         })
-    }
 
-    if (persons.some(person => person.name === body.name)) {
-        return response.status(400).json({
-            error: 'name must be unique'
+        person.save().then(savedPerson => {
+            response.json(savedPerson)
         })
-    }
 
-    const person = {
-        name: body.name,
-        number: body.number || false,
-        id: generateId(),
-    }
-    persons = persons.concat(person)
-    response.json(person)
+    })
+
 })
 
+//RETRIEVE
 
 app.get('/', (request, response) => {
     response.send('<h2>FullStackOpen part 3!</h2>')
 })
 
 app.get('/info', (request, response) => {
-    const timestamp = new Date().toLocaleString('en-GB', {
-        timeZone: 'Europe/Athens',
-        weekday: 'short',
-        year: 'numeric',
-        month: 'short',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-        timeZoneName: 'short'
-    });
+    Person.find({}).then(persons => {
 
-    response.send(`Phonebook has info for ${persons.length} people<br><br>${timestamp} (Eastern European Standard Time)`)
+        const timestamp = new Date().toLocaleString('en-GB', {
+            timeZone: 'Europe/Athens',
+            weekday: 'short',
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+            timeZoneName: 'short'
+        });
+
+        response.send(`Phonebook has info for ${persons.length} people<br><br>${timestamp} (Eastern European Standard Time)`)
+    })
 })
-
-// app.get('/api/persons', (request, response) => {
-//     response.json(persons)
-// })
 
 app.get('/api/persons', (request, response) => {
     Person.find({}).then(persons => {
@@ -80,15 +76,22 @@ app.get('/api/persons', (request, response) => {
 
 
 app.get('/api/persons/:id', (request, response) => {
-    const id = request.params.id
-    const person = persons.find(person => person.id === id)
-
-    if (person) {
+    Person.findById(request.params.id).then(person => {
         response.json(person)
-    } else {
-        response.status(404).send('a person with this id could not be found').end()
-    }
+    }).catch(error => {
+        response.status(404).send('a person with this id could not be found' + ": " + error.message).end()
+    })
 })
+
+
+
+//UPDATE
+
+// app.put
+
+
+
+//DELETE
 
 app.delete('/api/persons/:id', (request, response) => {
     const id = request.params.id
