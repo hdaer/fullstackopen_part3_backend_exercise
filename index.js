@@ -12,7 +12,6 @@ app.use(express.static('dist'))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 //CREATE
-
 app.post('/api/persons', (request, response) => {
     const body = request.body
 
@@ -44,7 +43,6 @@ app.post('/api/persons', (request, response) => {
 })
 
 //RETRIEVE
-
 app.get('/', (request, response) => {
     response.send('<h2>FullStackOpen part 3!</h2>')
 })
@@ -86,19 +84,38 @@ app.get('/api/persons/:id', (request, response) => {
 
 
 //UPDATE
+app.put('/api/persons/:id', (request, response, next) => {
+    const id = request.params.id
+    const body = request.body
 
-// app.put
+
+    Person.findByIdAndUpdate(
+        id,
+        { name: body.name, phoneNumber: body.number },
+        { new: true }
+    ).then(result => {
+        if (result) {
+            response.json(result)
+        } else {
+            response.status(404).json({ error: 'person not found' })
+        }
+    })
+        .catch(error => next(error))
 
 
+
+})
 
 //DELETE
-
-app.delete('/api/persons/:id', (request, response) => {
-    const id = request.params.id
-    persons = persons.filter(person => person.id != id)
-
-    response.status(204).end()
+app.delete('/api/persons/:id', (request, response, next) => {
+    Person.findByIdAndDelete(request.params.id)
+        .then(() => {
+            response.status(204).end()
+        })
+        .catch(error => next(error))
 })
+
+
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
