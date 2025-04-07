@@ -75,9 +75,14 @@ app.get('/api/persons', (request, response) => {
 
 app.get('/api/persons/:id', (request, response) => {
     Person.findById(request.params.id).then(person => {
-        response.json(person)
+        if (person) {
+            response.json(person)
+        }
+        else {
+            response.status(404).send('a person with this id could not be found').end()
+        }
     }).catch(error => {
-        response.status(404).send('a person with this id could not be found' + ": " + error.message).end()
+        response.status(400).send({ error: 'malformatted id' })
     })
 })
 
@@ -109,13 +114,30 @@ app.put('/api/persons/:id', (request, response, next) => {
 //DELETE
 app.delete('/api/persons/:id', (request, response, next) => {
     Person.findByIdAndDelete(request.params.id)
-        .then(() => {
-            response.status(204).end()
+        .then((result) => {
+
+            if (result) {
+                response.status(204).end()
+            }
+            else {
+                response.status(404).end()
+            }
         })
         .catch(error => next(error))
 })
 
 
+const errorHandler = (error, request, response, next) => {
+    console.log(error.message)
+
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
+    }
+    next(error)
+}
+
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
