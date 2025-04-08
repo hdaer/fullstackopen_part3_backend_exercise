@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
@@ -6,7 +7,7 @@ const cors = require('cors')
 
 const app = express()
 
-morgan.token('body', (req) => JSON.stringify(req.body));
+morgan.token('body', (req) => JSON.stringify(req.body))
 
 app.use(express.json())
 app.use(express.static('dist'))
@@ -23,7 +24,7 @@ app.use(cors({
 app.post('/api/persons', (request, response, next) => {
     const body = request.body
 
-    const persons = Person.find({}).then(persons => {
+    Person.find({}).then(persons => {
 
         // if (!body.name || !body.number) {
         //     return response.status(400).json({
@@ -67,7 +68,7 @@ app.get('/info', (request, response) => {
             minute: '2-digit',
             hour12: false,
             timeZoneName: 'short'
-        });
+        })
 
         response.send(`Phonebook has info for ${persons.length} people<br><br>${timestamp} (Eastern European Standard Time)`)
     })
