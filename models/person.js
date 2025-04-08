@@ -28,6 +28,13 @@ const personSchema = new mongoose.Schema({
     },
     phoneNumber: {
         type: String,
+        minLength: 8,
+        validate: {
+            validator: (v) => {
+                return /^(\d{2,3})-(\d+)$/.test(v)
+            },
+            message: props => `${props.value} is not a valid phone number!\nminimum of 8 numbers, starting with two or three digits plus a hyphen.`
+        },
         required: true
     }
 })

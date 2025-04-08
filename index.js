@@ -12,8 +12,9 @@ app.use(express.json())
 app.use(express.static('dist'))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
+// also remember to enable network access with correct IP in mongoDB online config
 app.use(cors({
-    origin: 'http://localhost:3002', // Your frontend URL
+    origin: 'http://localhost:5173/', // Your frontend URL
     methods: ['GET', 'POST', 'DELETE', 'PUT'],
     allowedHeaders: ['Content-Type']
 }))
