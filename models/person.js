@@ -21,8 +21,15 @@ mongoose.connect(url)
 // const password = process.argv[2]
 
 const personSchema = new mongoose.Schema({
-    name: String,
-    phoneNumber: String,
+    name: {
+        type: String,
+        minLength: 3,
+        required: true
+    },
+    phoneNumber: {
+        type: String,
+        required: true
+    }
 })
 
 personSchema.set('toJSON', {

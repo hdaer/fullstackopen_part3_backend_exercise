@@ -19,16 +19,16 @@ app.use(cors({
 }))
 
 //CREATE
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
     const body = request.body
 
     const persons = Person.find({}).then(persons => {
 
-        if (!body.name || !body.number) {
-            return response.status(400).json({
-                error: 'name or number missing'
-            })
-        }
+        // if (!body.name || !body.number) {
+        //     return response.status(400).json({
+        //         error: 'name or number missing'
+        //     })
+        // }
 
         if (persons.some(person => person.name === body.name)) {
             return response.status(400).json({
@@ -44,9 +44,8 @@ app.post('/api/persons', (request, response) => {
         person.save().then(savedPerson => {
             response.json(savedPerson)
         })
-
+            .catch(error => { next(error) })
     })
-
 })
 
 //RETRIEVE
@@ -140,9 +139,11 @@ const errorHandler = (error, request, response, next) => {
     if (error.name === 'CastError') {
         return response.status(400).send({ error: 'malformatted id' })
     }
+    if (error.name === 'ValidationError') {
+        return response.status(400).json({ error: error.message })
+    }
     next(error)
 }
-
 
 app.use(errorHandler)
 
